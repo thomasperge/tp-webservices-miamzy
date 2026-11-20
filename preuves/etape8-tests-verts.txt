@@ -1,0 +1,15 @@
+=== Tests verts ===
+
+> miamzy-api@1.0.0 test
+> vitest run
+
+
+ RUN  v3.2.7 /Users/thomaskauffmant/Documents/tp-webservices-miamzy
+
+ ✓ tests/api.test.js (7 tests) 228ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  10:59:00
+   Duration  435ms (transform 28ms, setup 0ms, collect 72ms, tests 228ms, environment 0ms, prepare 39ms)
+

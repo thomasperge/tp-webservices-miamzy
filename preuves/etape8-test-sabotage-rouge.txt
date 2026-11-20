@@ -1,0 +1,39 @@
+
+=== Sabotage MAX_LIMIT=1000000 — test pagination attendu ROUGE ===
+
+> miamzy-api@1.0.0 test
+> vitest run -t liste plafonnée
+
+
+ RUN  v3.2.7 /Users/thomaskauffmant/Documents/tp-webservices-miamzy
+
+ ❯ tests/api.test.js (7 tests | 1 failed | 6 skipped) 224ms
+   ↓ Miamzy API > 404 si commande inexistante
+   × Miamzy API > liste plafonnée à 100 même si limit=100000 21ms
+     → expected 5020 to be less than or equal to 100
+   ↓ Miamzy API > profil sans email, téléphone ni hash
+   ↓ Miamzy API > paiement idempotent : 3 envois, 1 ligne en base
+   ↓ Miamzy API > refuse paiement sans Idempotency-Key
+   ↓ Miamzy API > création commande panier vide → 422
+   ↓ Miamzy API > promo réduit le total ; sans promo inchangé
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api.test.js > Miamzy API > liste plafonnée à 100 même si limit=100000
+AssertionError: expected 5020 to be less than or equal to 100
+ ❯ tests/api.test.js:49:34
+     47|     const res = await request(app).get('/v1/orders?limit=100000');
+     48|     expect(res.status).toBe(200);
+     49|     expect(res.body.data.length).toBeLessThanOrEqual(100);
+       |                                  ^
+     50|     expect(res.body.pagination.limit).toBe(100);
+     51|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 skipped (7)
+   Start at  10:59:01
+   Duration  426ms (transform 23ms, setup 0ms, collect 72ms, tests 224ms, environment 0ms, prepare 33ms)
+

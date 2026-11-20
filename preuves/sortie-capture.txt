@@ -1,0 +1,223 @@
+
+======================================== ÉTAPE 1 — GET liste commandes ========================================
+
+{
+    "data": [
+        {
+            "id": 1,
+            "restaurant_id": 1,
+            "user_id": 1,
+            "status": "paid",
+            "total_cents": 501,
+            "discount_cents": 0,
+            "promo_code": null,
+            "created_at": "2026-06-02T01:01:00.000Z"
+        },
+        {
+            "id": 2,
+            "restaurant_id": 2,
+            "user_id": 2,
+            "status": "delivered",
+            "total_cents": 502,
+            "discount_cents": 0,
+            "promo_code": null,
+            "created_at": "2026-06-03T02:02:00.000Z"
+        },
+        {
+            "id": 3,
+            "restaurant_id": 3,
+            "user_id": 3,
+            "status": "pending",
+            "total_cents": 503,
+            "discount_cents": 0,
+            "promo_code": null,
+            "created_at": "2026-06-04T03:03:00.000Z"
+        },
+        {
+            "id": 4,
+            "restaurant_id": 4,
+            "user_id": 4,
+            "status": "paid",
+            "total_cents": 504,
+            "discount_cents": 0,
+            "promo_code": null,
+            "created_at": "2026-06-05T04:04:00.000Z"
+        },
+        {
+            "id": 5,
+            "restaurant_id": 5,
+            "user_id": 5,
+            "status": "delivered",
+            "total_cents": 505,
+            "discount_cents": 0,
+            "promo_code": null,
+            "created_at": "2026-06-06T05:05:00.000Z"
+        }
+    ],
+    "pagination": {
+        "limit": 5,
+        "offset": 0,
+        "total": 5003,
+        "next_offset": 5
+    }
+}
+
+======================================== ÉTAPE 1 — GET une commande ========================================
+
+{
+    "id": 1,
+    "restaurant_id": 1,
+    "user_id": 1,
+    "status": "paid",
+    "total_cents": 501,
+    "discount_cents": 0,
+    "promo_code": null,
+    "created_at": "2026-06-02T01:01:00.000Z",
+    "items": [
+        {
+            "name": "Menu du jour",
+            "unit_price_cents": 501,
+            "quantity": 2
+        }
+    ]
+}
+
+======================================== ÉTAPE 1 — GET profil utilisateur ========================================
+
+{
+    "id": 1,
+    "display_name": "User 1",
+    "created_at": "2025-01-01T00:00:00.000Z"
+}
+
+======================================== ÉTAPE 1 — POST créer commande (201) ========================================
+
+HTTP 201
+{
+    "id": 5004,
+    "restaurant_id": 1,
+    "user_id": 1,
+    "status": "pending",
+    "total_cents": 1200,
+    "discount_cents": 0,
+    "promo_code": null,
+    "created_at": "2026-11-20T09:55:54.148Z",
+    "items": [
+        {
+            "name": "Burger",
+            "unit_price_cents": 1200,
+            "quantity": 1
+        }
+    ]
+}
+
+======================================== ÉTAPE 1 — POST payer commande ========================================
+
+
+======================================== ÉTAPE 2 — Trois erreurs (même forme error.code / error.message) ========================================
+
+--- 404 ORDER_NOT_FOUND ---
+{
+    "error": {
+        "code": "ORDER_NOT_FOUND",
+        "message": "Commande introuvable."
+    }
+}
+--- 422 EMPTY_CART ---
+{
+    "error": {
+        "code": "EMPTY_CART",
+        "message": "Le panier est vide : ajoutez au moins un article."
+    }
+}
+--- 400 INVALID_JSON ---
+{
+    "error": {
+        "code": "INVALID_JSON",
+        "message": "Corps JSON invalide."
+    }
+}
+
+======================================== ÉTAPE 3 — limit=100000 (max 100 éléments) ========================================
+
+len(data)= 100
+pagination.limit= 100
+pagination.total= 5004
+
+======================================== ÉTAPE 4 — Idempotence : 3 paiements, même clé ========================================
+
+--- envoi 1 ---
+{
+    "payment": {
+        "id": 3,
+        "order_id": 5005,
+        "amount_cents": 1000,
+        "method": "card",
+        "created_at": "2026-11-20T09:55:54.430Z"
+    }
+}
+--- envoi 2 ---
+{
+    "payment": {
+        "id": 3,
+        "order_id": 5005,
+        "amount_cents": 1000,
+        "method": "card",
+        "created_at": "2026-11-20T09:55:54.430Z"
+    }
+}
+--- envoi 3 ---
+{
+    "payment": {
+        "id": 3,
+        "order_id": 5005,
+        "amount_cents": 1000,
+        "method": "card",
+        "created_at": "2026-11-20T09:55:54.430Z"
+    }
+}
+(Vérifier en base : 1 seule ligne payments pour cette commande)
+
+======================================== ÉTAPE 5 — Profil (pas email / phone / password_hash) ========================================
+
+{
+    "id": 1,
+    "display_name": "User 1",
+    "created_at": "2025-01-01T00:00:00.000Z"
+}
+Champs sensibles en base (à montrer à côté) :
+1|User 1|user1@example.com|0600000001|$2b$10$fakehashxxxxx
+
+======================================== ÉTAPE 7 — Commande sans promo vs BIENVENUE10 ========================================
+
+--- sans promo ---
+total_cents 1000 discount 0
+--- avec promo ---
+total_cents 900 discount 100 promo BIENVENUE10
+
+======================================== ÉTAPE 6 — Rate limit (200 requêtes rapides sur GET /v1/users/1) ========================================
+
+200 = 83 | 429 = 117
+Exemple réponse 429 :
+HTTP/1.1 429 Too Many Requests
+X-Powered-By: Express
+RateLimit-Policy: 100;w=900
+RateLimit-Limit: 100
+RateLimit-Remaining: 0
+RateLimit-Reset: 898
+Retry-After: 900
+Content-Type: application/json; charset=utf-8
+Content-Length: 93
+ETag: W/"5d-xyZ/AfEvqcQOJkD5wptyV/H3svI"
+Date: Fri, 20 Nov 2026 09:55:56 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":{"code":"RATE_LIMIT_EXCEEDED","message":"Trop de requêtes. Réessayez plus tard."}}
+======================================== ÉTAPE 8 — Tests automatiques ========================================
+
+Dans un autre terminal : npm test
+Capture terminal vert ; puis sabotage volontaire d'une protection et re-tester.
+
+======================================== FIN — Fais des captures d'écran de chaque section ci-dessus ========================================
+
